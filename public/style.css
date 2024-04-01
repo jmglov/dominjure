@@ -6,34 +6,45 @@
   margin-right: 10px;
 }
 
+img {
+  object-fit: contain;
+  height: 100%;
+  width: 100%;
+}
+
 #board {
   display: flex;
+  gap: 5px;
 }
 
 #supply-non-kingdom {
   display: flex;
+  gap: 5px;
+  width: 25%;
 }
 
 #victory {
   display: flex;
   flex-direction: column;
-  width: 200px;
-}
-
-#victory > img {
-  margin: 5px;
+  gap: 5px;
+  width: 50%;
 }
 
 #treasure {
   display: flex;
   flex-direction: column;
-  width: 200px;
+  gap: 5px;
+  width: 50%;
 }
 
-#treasure > img {
-  margin: 5px;
+#supply {
+  display: flex;
+  flex-direction: column;
+  width: 75%;
+  gap: 5px;
 }
 
-#supply > div > img {
-  margin: 5px;
+#supply > div {
+  display: flex;
+  gap: 5px;
 }
