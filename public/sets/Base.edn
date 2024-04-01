@@ -4,284 +4,422 @@
   "https://wiki.dominionstrategy.com/images/thumb/4/4d/Bureaucrat.jpg/200px-Bureaucrat.jpg",
   :width "200",
   :height "320",
-  :title "Bureaucrat"},
+  :title "Bureaucrat"
+  :cost 4
+  :types #{:action :attack}
+  :kingdom true
+  :set "Base"
+  :text "Gain a Silver onto your deck. Each other player reveals a Victory card from their hand and puts it onto their deck (or reveals a hand with no Victory cards)."},
  "Moneylender"
  {:alt "Moneylender.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/7/70/Moneylender.jpg/200px-Moneylender.jpg",
   :width "200",
   :height "320",
-  :title "Moneylender"},
+  :title "Moneylender"
+  :cost 4
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :text "You may trash a Copper from your hand for +3"},
  "Artisan"
  {:alt "Artisan.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/1/1d/Artisan.jpg/200px-Artisan.jpg",
   :width "200",
   :height "320",
-  :title "Artisan"},
+  :title "Artisan"
+  :cost 6
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :text "Gain a card to your hand costing up to $5. Put a card from your hand onto your deck."},
  "Silver"
  {:alt "Silver.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/5/5d/Silver.jpg/200px-Silver.jpg",
   :width "200",
   :height "320",
-  :title "Silver"},
+  :title "Silver"
+  :cost 3
+  :types #{:treasure}
+  :kingdom false
+  :set "Base"
+  :value 2},
  "Chapel"
  {:alt "Chapel.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/2/29/Chapel.jpg/200px-Chapel.jpg",
   :width "200",
   :height "320",
-  :title "Chapel"},
+  :title "Chapel"
+  :cost 2
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :text "Trash up to 4 cards from your hand."},
  "Witch"
  {:alt "Witch.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/f/f3/Witch.jpg/200px-Witch.jpg",
   :width "200",
   :height "321",
-  :title "Witch"},
+  :title "Witch"
+  :cost 5
+  :types #{:action :attack}
+  :kingdom true
+  :set "Base"
+  :text "Each other player gains a Curse."},
  "Copper"
  {:alt "Copper.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg",
   :width "200",
   :height "322",
-  :title "Copper"},
+  :title "Copper"
+  :cost 0
+  :types #{:treasure}
+  :kingdom false
+  :set "Base"
+  :value 1},
  "Militia"
  {:alt "Militia.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/a/a0/Militia.jpg/200px-Militia.jpg",
   :width "200",
   :height "320",
-  :title "Militia"},
+  :title "Militia"
+  :cost 4
+  :types #{:action :attack}
+  :kingdom true
+  :set "Base"
+  :value 2
+  :text "Each other player discards down to 3 cards in hand."},
  "Gardens"
  {:alt "Gardens.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/8/8c/Gardens.jpg/200px-Gardens.jpg",
   :width "200",
   :height "319",
-  :title "Gardens"},
+  :title "Gardens"
+  :cost 4
+  :types #{:victory}
+  :kingdom true
+  :set "Base"
+  :text "Worth 1 VP per 10 cards you have (round down)."
+  :vp {:vp 1
+       :cards 10}},
  "Workshop"
  {:alt "Workshop.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/5/50/Workshop.jpg/200px-Workshop.jpg",
   :width "200",
   :height "321",
-  :title "Workshop"},
+  :title "Workshop"
+  :cost 3
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :text "Gain a card costing up to $4."},
  "Moat"
  {:alt "Moat.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/f/fe/Moat.jpg/200px-Moat.jpg",
   :width "200",
   :height "322",
-  :title "Moat"},
+  :title "Moat"
+  :cost 2
+  :types #{:action :reaction}
+  :cards 2
+  :reactions #{:nullify-attack}
+  :kingdom true
+  :set "Base"
+  :text "When another player plays an Attack card, you may first reveal this from your hand, to be unaffected by it."},
  "Remodel"
  {:alt "Remodel.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/2/2e/Remodel.jpg/200px-Remodel.jpg",
   :width "200",
   :height "321",
-  :title "Remodel"},
- "Thief"
- {:alt "Thief.jpg",
-  :src
-  "https://wiki.dominionstrategy.com/images/thumb/f/f5/Thief.jpg/200px-Thief.jpg",
-  :width "200",
-  :height "319",
-  :title "Thief"},
+  :title "Remodel"
+  :cost 4
+  :types #{:action :reaction}
+  :kingdom true
+  :set "Base"
+  :text "Trash a card from your hand. Gain a card costing up to $2 more than it."},,
  "Throne Room"
  {:alt "Throne Room.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/d/d1/Throne_Room.jpg/200px-Throne_Room.jpg",
   :width "200",
   :height "320",
-  :title "Throne Room"},
+  :title "Throne Room"
+  :cost 4
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :text "You may play an Action card from your hand twice."},
  "Mine"
  {:alt "Mine.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/8/8e/Mine.jpg/200px-Mine.jpg",
   :width "200",
   :height "320",
-  :title "Mine"},
+  :title "Mine"
+  :cost 5
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :text "You may trash a Treasure from your hand. Gain a Treasure to your hand costing up to $3 more than it."},
  "Gold"
  {:alt "Gold.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/5/50/Gold.jpg/200px-Gold.jpg",
   :width "200",
   :height "319",
-  :title "Gold"},
+  :title "Gold"
+  :cost 6
+  :types #{:treasure}
+  :kingdom false
+  :set "Base"
+  :value 3},
  "Poacher"
  {:alt "Poacher.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/a/a0/Poacher.jpg/200px-Poacher.jpg",
   :width "200",
   :height "320",
-  :title "Poacher"},
+  :title "Poacher"
+  :cost 4
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :value 1
+  :cards 1
+  :actions 1
+  :text "Discard a card per empty Supply pile."},
  "Harbinger"
  {:alt "Harbinger.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/3/32/Harbinger.jpg/200px-Harbinger.jpg",
   :width "200",
   :height "321",
-  :title "Harbinger"},
+  :title "Harbinger"
+  :cost 3
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :cards 1
+  :actions 1
+  :text "Look through your discard pile. You may put a card from it onto your deck."},
  "Merchant"
  {:alt "Merchant.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/7/78/Merchant.jpg/200px-Merchant.jpg",
   :width "200",
   :height "321",
-  :title "Merchant"},
+  :title "Merchant"
+  :cost 3
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :cards 1
+  :actions 1
+  :text "The first time you play a Silver this turn, +$1."},
  "Province"
  {:alt "Province.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/8/81/Province.jpg/200px-Province.jpg",
   :width "200",
   :height "320",
-  :title "Province"},
- "Victory point"
- {:alt "VP",
-  :src
-  "https://wiki.dominionstrategy.com/images/thumb/9/92/VP.png/14px-VP.png",
-  :width "14",
-  :height "16",
-  :title "Victory point"},
+  :title "Province"
+  :cost 8
+  :types #{:victory}
+  :kingdom false
+  :set "Base"
+  :vp 6},
  "Council Room"
  {:alt "Council Room.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/e/e0/Council_Room.jpg/200px-Council_Room.jpg",
   :width "200",
   :height "320",
-  :title "Council Room"},
+  :title "Council Room"
+  :cost 5
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :cards 4
+  :buys 1
+  :text "Each other player draws a card."},
  "Smithy"
  {:alt "Smithy.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/3/36/Smithy.jpg/200px-Smithy.jpg",
   :width "200",
   :height "321",
-  :title "Smithy"},
+  :title "Smithy"
+  :cost 4
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :cards 3
+  :text ""},
  "Library"
  {:alt "Library.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/9/98/Library.jpg/200px-Library.jpg",
   :width "200",
   :height "322",
-  :title "Library"},
- "Woodcutter"
- {:alt "Woodcutter.jpg",
-  :src
-  "https://wiki.dominionstrategy.com/images/thumb/d/d6/Woodcutter.jpg/200px-Woodcutter.jpg",
-  :width "200",
-  :height "319",
-  :title "Woodcutter"},
- "Enlarge"
- {:src
-  "https://wiki.dominionstrategy.com/skins/common/images/magnify-clip.png",
-  :width "15",
-  :height "11",
-  :alt "",
-  :title "Enlarge"},
+  :title "Library"
+  :cost 5
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :text "Draw until you have 7 cards in hand, skipping any Action cards you choose to; set those aside, discarding them afterwards."},
  "Sentry"
  {:alt "Sentry.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/4/4c/Sentry.jpg/200px-Sentry.jpg",
   :width "200",
   :height "321",
-  :title "Sentry"},
+  :title "Sentry"
+  :cost 5
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :cards 1
+  :actions 1
+  :text "Look at the top 2 cards of your deck. Trash and/or discard any number of them. Put the rest back on top in any order."},
  "Vassal"
  {:alt "Vassal.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/0/0b/Vassal.jpg/200px-Vassal.jpg",
   :width "200",
   :height "322",
-  :title "Vassal"},
- "Spy"
- {:alt "Spy.jpg",
-  :src
-  "https://wiki.dominionstrategy.com/images/thumb/c/cb/Spy.jpg/200px-Spy.jpg",
-  :width "200",
-  :height "318",
-  :title "Spy"},
+  :title "Vassal"
+  :cost 3
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :value 2
+  :text "Discard the top card of your deck. If it is an Action card, you may play it."},
  "Laboratory"
  {:alt "Laboratory.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/0/0c/Laboratory.jpg/200px-Laboratory.jpg",
   :width "200",
   :height "321",
-  :title "Laboratory"},
+  :title "Laboratory"
+  :cost 5
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :cards 2
+  :actions 1
+  :text ""},
  "Village"
  {:alt "Village.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/5/5a/Village.jpg/200px-Village.jpg",
   :width "200",
   :height "321",
-  :title "Village"},
+  :title "Village"
+  :cost 3
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :cards 1
+  :actions 2
+  :text ""},
  "Festival"
  {:alt "Festival.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/e/ec/Festival.jpg/200px-Festival.jpg",
   :width "200",
   :height "320",
-  :title "Festival"},
+  :title "Festival"
+  :cost 5
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :actions 2
+  :buys 1
+  :value 2
+  :text ""},
  "Curse"
  {:alt "Curse.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/9/97/Curse.jpg/200px-Curse.jpg",
   :width "200",
   :height "322",
-  :title "Curse"},
+  :title "Curse"
+  :cost 0
+  :types #{:curse}
+  :kingdom false
+  :set "Base"
+  :vp -1},
  "Bandit"
  {:alt "Bandit.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/4/46/Bandit.jpg/200px-Bandit.jpg",
   :width "200",
   :height "320",
-  :title "Bandit"},
- "Feast"
- {:alt "Feast.jpg",
-  :src
-  "https://wiki.dominionstrategy.com/images/thumb/9/9c/Feast.jpg/200px-Feast.jpg",
-  :width "200",
-  :height "316",
-  :title "Feast"},
- "Chancellor"
- {:alt "Chancellor.jpg",
-  :src
-  "https://wiki.dominionstrategy.com/images/thumb/b/b7/Chancellor.jpg/200px-Chancellor.jpg",
-  :width "200",
-  :height "316",
-  :title "Chancellor"},
+  :title "Bandit"
+  :cost 5
+  :types #{:action :attack}
+  :kingdom true
+  :set "Base"
+  :text "Gain a Gold. Each other player reveals the top 2 cards of their deck, trashes a revealed Treasure other than Copper, and discards the rest."},
  "Cellar"
  {:alt "Cellar.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/1/1c/Cellar.jpg/200px-Cellar.jpg",
   :width "200",
   :height "321",
-  :title "Cellar"},
- "Adventurer"
- {:alt "Adventurer.jpg",
-  :src
-  "https://wiki.dominionstrategy.com/images/thumb/7/71/Adventurer.jpg/200px-Adventurer.jpg",
-  :width "200",
-  :height "316",
-  :title "Adventurer"},
+  :title "Cellar"
+  :cost 2
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :actions 1
+  :text "Discard any number of cards, then draw that many."},
  "Market"
  {:alt "Market.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/7/7e/Market.jpg/200px-Market.jpg",
   :width "200",
   :height "321",
-  :title "Market"},
+  :title "Market"
+  :cost 5
+  :types #{:action}
+  :kingdom true
+  :set "Base"
+  :cards 1
+  :actions 1
+  :buys 1
+  :value 1},
  "Duchy"
  {:alt "Duchy.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/4/4a/Duchy.jpg/200px-Duchy.jpg",
   :width "200",
   :height "322",
-  :title "Duchy"},
+  :title "Duchy"
+  :cost 5
+  :types #{:victory}
+  :kingdom false
+  :set "Base"
+  :vp 3},
  "Estate"
  {:alt "Estate.jpg",
   :src
   "https://wiki.dominionstrategy.com/images/thumb/9/91/Estate.jpg/200px-Estate.jpg",
   :width "200",
   :height "322",
-  :title "Estate"}}
+  :title "Estate"
+  :cost 2
+  :types #{:victory}
+  :kingdom false
+  :set "Base"
+  :vp 1}}

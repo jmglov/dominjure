@@ -5,3 +5,35 @@
 #load-set > label {
   margin-right: 10px;
 }
+
+#board {
+  display: flex;
+}
+
+#supply-non-kingdom {
+  display: flex;
+}
+
+#victory {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+#victory > img {
+  margin: 5px;
+}
+
+#treasure {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+#treasure > img {
+  margin: 5px;
+}
+
+#supply > div > img {
+  margin: 5px;
+}
