@@ -1,0 +1,7 @@
+#load-set {
+  display: flex;
+}
+
+#load-set > label {
+  margin-right: 10px;
+}
