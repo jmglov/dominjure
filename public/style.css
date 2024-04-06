@@ -91,6 +91,11 @@ img {
   gap: 2px;
 }
 
+#p2-turn {
+  display: flex;
+  justify-content: space-between;
+}
+
 #supply {
   display: flex;
   flex-direction: column;

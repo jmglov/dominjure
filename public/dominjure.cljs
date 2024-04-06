@@ -6,14 +6,31 @@
 (def statuses
   {:PENDING-FETCH-SETS "Waiting to fetch sets metadata"
    :PENDING-SET-SELECTION "Waiting for user to select a set"
-   :PENDING-FETCH-CARDS "Waiting to fetch cards metadata for a set"})
+   :PENDING-FETCH-CARDS "Waiting to fetch cards metadata for a set"
+   :PENDING-START-GAME "Waiting for player to start game"
+   :WAITING-FOR-PLAYER "Waiting for player to play a turn"})
 
-(defonce game-state
-  (atom
-   {:status :PENDING-FETCH-SETS
-    :available-sets {}
-    :set-name nil
-    :set-cards []}))
+(def initial-state
+  {:status :PENDING-FETCH-SETS
+   :pending-effect nil
+   :pending-event nil
+   :available-sets {}
+   :set-name nil
+   :cards []
+   :board {:victory []
+           :treasure []
+           :supply []
+           :trash []
+           :p1 {:deck []
+                :discard []
+                :play-area []
+                :hand []}
+           :p2 {:deck []
+                :discard []
+                :play-area []
+                :hand []}}})
+
+(defonce game-state (atom initial-state))
 
 (defonce event-handlers
   (atom {}))
@@ -25,10 +42,13 @@
   (cond
     (sequential? obj)
     (doseq [o obj]
-      (js/console.log msg o))
+      (log msg o))
 
     obj
-    (js/console.log msg obj)
+    (js/console.log msg
+                    (if (any? #(% obj) [map? vector? list? set? keyword?])
+                      (pr-str obj)
+                      obj))
 
     :default
     (js/console.log msg))
@@ -37,20 +57,57 @@
 (defn error [& msgs]
   (js/console.error (str/join msgs)))
 
+(defn enqueue-effect [state effect]
+  (assoc state :pending-effect effect))
+
+(defn enqueue-event [state event args]
+  (let [pending-event {:event event, :args args}]
+    (log "Enqueuing event:" pending-event)
+    (assoc state :pending-event pending-event)))
+
+(defn process-effects
+  ([]
+   (process-effects @game-state))
+  ([{:keys [pending-effect] :as state}]
+   (if pending-effect
+     (let [{:keys [effect event f args]} pending-effect]
+       (log "Dispatching effect:" (cons effect args))
+       (p/let [res (apply f args)]
+         (-> state
+             (enqueue-event event res)
+             (assoc :pending-effect nil))))
+     state)))
+
+(defn process-events
+  ([]
+   (process-events @game-state))
+  ([{:keys [pending-event] :as state}]
+   (if pending-event
+     (let [{:keys [event args]} pending-event]
+       (log "Handling event:" pending-event)
+       (if-let [f (@event-handlers event)]
+         (-> state
+             (merge (f state args))
+             (assoc :pending-event nil))
+         (do
+           (error "No event handler registered for event: " (name event))
+           (assoc state :pending-event nil))))
+     state)))
+
+(declare tick!)
+
+(defn fire-event!
+  ([event args]
+   (fire-event! @game-state event args))
+  ([state event args]
+   (->> (enqueue-event state event args)
+        tick!)))
+
 (defn update-status [state status]
   (if (statuses status)
     (assoc state :status status)
     (error "Invalid status: " (name status) "\n"
            "Should be one of: " (-> (keys statuses) set pr-str))))
-
-(declare render!)
-
-(defn fire-event! [event & args]
-  (log (str "Firing event: " (name event)))
-  (if-let [f (@event-handlers event)]
-    (-> (apply swap! game-state f args)
-        render!)
-    (error "No event handler registered for event: " (name event))))
 
 (defn populate-select! [id options]
   (let [select (dom/get-el id)
@@ -66,6 +123,7 @@
   options)
 
 (defn render-set-selection! [{:keys [status available-sets] :as state}]
+  (dom/set-styles! "#load-set" {})  ; revert to default styles
   (case status
     :PENDING-FETCH-SETS
     (-> (dom/get-el "#set-select")
@@ -76,12 +134,27 @@
     (populate-select! "#set-select"
                       (map (comp dom/mk-option :name) available-sets))
 
-    (dom/set-styles! "#load-set" {:display "none"})))
+    (dom/set-styles! "#load-set" {:display "none"}))
+  state)
+
+(defn render-board! [{:keys [status] :as state}]
+  (case status
+    :PENDING-START-GAME
+    (dom/set-children! "#p2-turn"
+                       [(dom/mk-element "span" "Ready to go?")
+                        (dom/mk-button "Start game"
+                                       #(fire-event! :START-GAME []))])
+
+    :default)
+  state)
 
 (defn render! [{:keys [status] :as state}]
-  (render-set-selection! state))
+  (-> state
+      render-set-selection!
+      render-board!))
 
 (defn fetch-edn [path]
+  (log "Fetching path:" path)
   (p/-> (js/fetch (js/Request. path))
         (.text)
         read-string))
@@ -124,6 +197,11 @@
         (sort-by :cost)
         reverse)))
 
+(defn make-piles [cards]
+  (->> cards
+       (map (fn [{:keys [starting-amount] :as card}]
+              (repeat starting-amount card)))))
+
 (defn starting-deck [cards]
   (concat (repeat 7 (cards "Copper"))
           (repeat 3 (cards "Estate"))))
@@ -132,12 +210,14 @@
   {:hand (take num-cards deck)
    :deck (drop num-cards deck)})
 
-(defn flip [{:keys [src card-back card-front] :as card}]
+(defn flip [{:keys [face-up src card-back card-front] :as card}]
   (when card
-    (if (= card-back src)
-      (assoc card :src card-front)
+    (if face-up
       (merge card {:src card-back
-                   :card-front src}))))
+                   :card-front src
+                   :face-up false})
+      (merge card {:src card-front
+                   :face-up true}))))
 
 (defn place-player-cards! [{:keys [player-name deck discard hand]}]
   (let [deck-id (str "#" player-name "-deck")
@@ -151,6 +231,32 @@
       (place-card! (flip card) hand-id
                    {:click #(str "Card clicked: " (:title card))
                     :contextmenu #(str "Help for card: " (:title card))}))))
+
+(defn start-turn! [player-id]
+  (let [player (@game-state player-id)]
+    (->> (update player :hand #(map flip %))
+         place-player-cards!)))
+
+(defn add-sets [state sets]
+  (log (str "Sets: " sets))
+  (-> state
+      (update-status :PENDING-SET-SELECTION)
+      (assoc :available-sets sets)))
+
+(defn select-set [state set-name]
+  (if (not= "--" set-name)
+    (do
+      (log "Selecting set:" set-name)
+      (-> state
+          (update-status :PENDING-FETCH-CARDS)
+          (assoc :set-name set-name)
+          (enqueue-effect {:effect :FETCH-CARDS
+                           :f fetch-edn
+                           :args [(str "sets/" set-name ".edn")]
+                           :event :CARDS-LOADED})))
+    (do
+      (log "No set selected")
+      state)))
 
 (defn start-game! [{:keys [card-back cards]}]
   (let [cards (->> cards
@@ -189,46 +295,123 @@
         (reset! game-state state)
         state))))
 
-(defn start-turn! [player-id]
-  (let [player (@game-state player-id)]
-    (->> (update player :hand #(map flip %))
-         place-player-cards!)))
+(defn glue-card [card-back card]
+  (assoc card :card-back card-back))
 
-(defn select-set! []
-  (let [set-name (.-value (dom/get-el "#set-select"))]
-    (when-not (= "--" set-name)
-      (log "Loading set:" set-name)
-      (p/->> (fetch-edn (str "sets/" set-name ".edn"))
-             start-game!)
-      (set! (.-style (dom/get-el "#load-set")) "display: none"))))
+(defn assemble-cards [{:keys [card-back cards]}]
+  (->> cards
+       (map (fn [[card-name card]] [card-name (glue-card card-back card)]))
+       (into {})))
 
-(defn add-sets [state sets]
-  (log (str "Sets: " (pr-str sets)))
+(defn select-victory [{:keys [cards] :as state}]
+  (assoc state :victory
+         (->> cards
+              (select-cards (fn [{:keys [kingdom types]}]
+                              (and (or (:victory types) (:curse types))
+                                   (not kingdom))))
+              make-piles)))
+
+(defn select-treasure [{:keys [cards] :as state}]
+  (assoc state :treasure
+         (->> cards
+              (select-cards (fn [{:keys [kingdom types]}]
+                              (and (:treasure types)
+                                   (not kingdom))))
+              make-piles)))
+
+(defn select-kingdom [{:keys [cards] :as state}]
+  (assoc state :kingdom
+         (->> cards
+              (select-cards :kingdom 10)
+              make-piles)))
+
+(defn deal-cards [{:keys [cards] :as state}]
+  (let [p1-cards (shuffle (starting-deck cards))
+        p2-cards (shuffle (starting-deck cards))
+        p1 (merge {:player-name "p1", :cards p1-cards} (draw 5 p1-cards))
+        p2 (merge {:player-name "p2", :cards p2-cards} (draw 5 p2-cards))]
+    (merge state {:p1 p1, :p2 p2})))
+
+(defn prepare-board [{:keys [set-name] :as state} game-set]
+  (let [cards (assemble-cards game-set)]
+    (log "Prepared board:"
+         (-> state
+             (assoc :cards cards)
+             select-victory
+             select-treasure
+             select-kingdom
+             deal-cards
+             (update-status :PENDING-START-GAME)))))
+
+(defn start-turn [state]
   (-> state
-      (update-status :PENDING-SET-SELECTION)
-      (assoc :available-sets sets)))
+      (update :turn-num inc)
+      (update-status :WAITING-FOR-PLAYER)))
 
-(defn select-set [state set-name]
-  (if set-name
-    (do
-      (log (str "Selecting set: " set-name))
-      (-> state
-          (update-status :PENDING-FETCH-CARDS)
-          (assoc :set-name set-name)))
-    (do
-      (log "No set selected")
-      state)))
+(defn start-game [state]
+  (log "Starting game!")
+  (-> state
+      (assoc :turn-num 0)
+      start-turn))
+
+(defn tick!
+  ([]
+   (tick! @game-state))
+  ([state]
+   (p/->> state
+          process-events
+          process-effects
+          process-events
+          render!
+          (swap! game-state merge))))
 
 (defn load-ui! []
   (register-handler :SETS-LOADED add-sets)
   (register-handler :SET-SELECTED select-set)
-  (render! @game-state)
-  (p/->> (fetch-edn "sets.edn")
-         (fire-event! :SETS-LOADED)))
+  (register-handler :CARDS-LOADED prepare-board)
+  (register-handler :START-GAME start-game)
+  (p/-> @game-state
+        tick!
+        (enqueue-effect {:effect :FETCH-SETS
+                         :f fetch-edn
+                         :args ["sets.edn"]
+                         :event :SETS-LOADED})
+        tick!))
 
 #_(load-ui!)
 
 (comment
+
+  (load-ui!)
+  ;; => #<Promise[~]>
+
+  (swap! game-state update-status :PENDING-START-GAME)
+
+  (reset! game-state initial-state)
+
+  @game-state
+  ;; => {:status :PENDING-FETCH-SETS, :available-sets {}, :set-name nil, :set-cards [], :pending-effects [], :pending-events []}
+
+  (select-keys @game-state [:status :pending-effects :pending-events])
+  ;; => {:status :PENDING-SET-SELECTION}
+  ;; => {:status :PENDING-FETCH-CARDS}
+  ;; => {:status :PENDING-FETCH-CARDS}
+  ;; => {:status :PENDING-FETCH-CARDS}
+
+  (-> @game-state
+      (enqueue-effect {:effect :FETCH-CARDS
+                       :f fetch-edn
+                       :args [(str "sets/Base.edn")]
+                       :event :CARDS-LOADED})
+      tick!)
+
+  )
+
+#_(load-ui!)
+
+(comment
+
+  (load-ui!)
 
   @game-state
   ;; => {:status :PENDING-SET-SELECTION, :available-sets [{:name "Base"}], :set-name nil, :set-cards []}
