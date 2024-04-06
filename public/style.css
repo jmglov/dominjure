@@ -14,13 +14,13 @@ img {
 
 #board {
   display: flex;
-  gap: 5px;
+  gap: 5%;
 }
 
 #supply-non-kingdom {
   display: flex;
   gap: 5px;
-  width: 25%;
+  width: 15%;
 }
 
 #victory {
@@ -37,10 +37,66 @@ img {
   width: 50%;
 }
 
-#supply {
+#main-board {
   display: flex;
   flex-direction: column;
   width: 75%;
+}
+
+#p1 {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+#p1-deck {
+  width: 10%;
+}
+
+#p1-discard {
+  width: 10%;
+}
+
+#p1-play-area {
+  width: 40%;
+}
+
+#p1-hand {
+  display: flex;
+  width: 40%;
+  gap: 2px;
+}
+
+#p2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+#p2-deck {
+  width: 10%;
+}
+
+#p2-discard {
+  width: 10%;
+}
+
+#p2-play-area {
+  width: 40%;
+}
+
+#p2-hand {
+  display: flex;
+  width: 40%;
+  gap: 2px;
+}
+
+#supply {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 55%;
+  align-self: center;
   gap: 5px;
 }
 
