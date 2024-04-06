@@ -11,7 +11,8 @@
    :types #{:action :attack}
    :kingdom true
    :set "Base"
-   :text "Gain a Silver onto your deck. Each other player reveals a Victory card from their hand and puts it onto their deck (or reveals a hand with no Victory cards)."},
+   :text "Gain a Silver onto your deck. Each other player reveals a Victory card from their hand and puts it onto their deck (or reveals a hand with no Victory cards)."
+   :starting-amount 10},
   "Moneylender"
   {:alt "Moneylender.jpg",
    :src
@@ -23,7 +24,8 @@
    :types #{:action}
    :kingdom true
    :set "Base"
-   :text "You may trash a Copper from your hand for +3"},
+   :text "You may trash a Copper from your hand for +3"
+   :starting-amount 10},
   "Artisan"
   {:alt "Artisan.jpg",
    :src
@@ -35,7 +37,8 @@
    :types #{:action}
    :kingdom true
    :set "Base"
-   :text "Gain a card to your hand costing up to $5. Put a card from your hand onto your deck."},
+   :text "Gain a card to your hand costing up to $5. Put a card from your hand onto your deck."
+   :starting-amount 10},
   "Silver"
   {:alt "Silver.jpg",
    :src
@@ -47,7 +50,8 @@
    :types #{:treasure}
    :kingdom false
    :set "Base"
-   :value 2},
+   :value 2
+   :starting-amount 40},
   "Chapel"
   {:alt "Chapel.jpg",
    :src
@@ -59,7 +63,8 @@
    :types #{:action}
    :kingdom true
    :set "Base"
-   :text "Trash up to 4 cards from your hand."},
+   :text "Trash up to 4 cards from your hand."
+   :starting-amount 10},
   "Witch"
   {:alt "Witch.jpg",
    :src
@@ -71,7 +76,8 @@
    :types #{:action :attack}
    :kingdom true
    :set "Base"
-   :text "Each other player gains a Curse."},
+   :text "Each other player gains a Curse."
+   :starting-amount 10},
   "Copper"
   {:alt "Copper.jpg",
    :src
@@ -83,7 +89,8 @@
    :types #{:treasure}
    :kingdom false
    :set "Base"
-   :value 1},
+   :value 1
+   :starting-amount 46},
   "Militia"
   {:alt "Militia.jpg",
    :src
@@ -96,7 +103,8 @@
    :kingdom true
    :set "Base"
    :value 2
-   :text "Each other player discards down to 3 cards in hand."},
+   :text "Each other player discards down to 3 cards in hand."
+   :starting-amount 10},
   "Gardens"
   {:alt "Gardens.jpg",
    :src
@@ -110,7 +118,8 @@
    :set "Base"
    :text "Worth 1 VP per 10 cards you have (round down)."
    :vp {:vp 1
-        :cards 10}},
+        :cards 10}
+   :starting-amount 8},
   "Workshop"
   {:alt "Workshop.jpg",
    :src
@@ -122,7 +131,8 @@
    :types #{:action}
    :kingdom true
    :set "Base"
-   :text "Gain a card costing up to $4."},
+   :text "Gain a card costing up to $4."
+   :starting-amount 10},
   "Moat"
   {:alt "Moat.jpg",
    :src
@@ -136,7 +146,8 @@
    :reactions #{:nullify-attack}
    :kingdom true
    :set "Base"
-   :text "When another player plays an Attack card, you may first reveal this from your hand, to be unaffected by it."},
+   :text "When another player plays an Attack card, you may first reveal this from your hand, to be unaffected by it."
+   :starting-amount 10},
   "Remodel"
   {:alt "Remodel.jpg",
    :src
@@ -148,7 +159,8 @@
    :types #{:action :reaction}
    :kingdom true
    :set "Base"
-   :text "Trash a card from your hand. Gain a card costing up to $2 more than it."},,
+   :text "Trash a card from your hand. Gain a card costing up to $2 more than it."
+   :starting-amount 10},
   "Throne Room"
   {:alt "Throne Room.jpg",
    :src
@@ -160,7 +172,8 @@
    :types #{:action}
    :kingdom true
    :set "Base"
-   :text "You may play an Action card from your hand twice."},
+   :text "You may play an Action card from your hand twice."
+   :starting-amount 10},
   "Mine"
   {:alt "Mine.jpg",
    :src
@@ -172,7 +185,8 @@
    :types #{:action}
    :kingdom true
    :set "Base"
-   :text "You may trash a Treasure from your hand. Gain a Treasure to your hand costing up to $3 more than it."},
+   :text "You may trash a Treasure from your hand. Gain a Treasure to your hand costing up to $3 more than it."
+   :starting-amount 10},
   "Gold"
   {:alt "Gold.jpg",
    :src
@@ -184,7 +198,8 @@
    :types #{:treasure}
    :kingdom false
    :set "Base"
-   :value 3},
+   :value 3
+   :starting-amount 30},
   "Poacher"
   {:alt "Poacher.jpg",
    :src
@@ -199,7 +214,8 @@
    :value 1
    :cards 1
    :actions 1
-   :text "Discard a card per empty Supply pile."},
+   :text "Discard a card per empty Supply pile."
+   :starting-amount 10},
   "Harbinger"
   {:alt "Harbinger.jpg",
    :src
@@ -213,7 +229,8 @@
    :set "Base"
    :cards 1
    :actions 1
-   :text "Look through your discard pile. You may put a card from it onto your deck."},
+   :text "Look through your discard pile. You may put a card from it onto your deck."
+   :starting-amount 10},
   "Merchant"
   {:alt "Merchant.jpg",
    :src
@@ -227,7 +244,8 @@
    :set "Base"
    :cards 1
    :actions 1
-   :text "The first time you play a Silver this turn, +$1."},
+   :text "The first time you play a Silver this turn, +$1."
+   :starting-amount 10},
   "Province"
   {:alt "Province.jpg",
    :src
@@ -239,7 +257,8 @@
    :types #{:victory}
    :kingdom false
    :set "Base"
-   :vp 6},
+   :vp 6
+   :starting-amount 8},
   "Council Room"
   {:alt "Council Room.jpg",
    :src
@@ -253,7 +272,8 @@
    :set "Base"
    :cards 4
    :buys 1
-   :text "Each other player draws a card."},
+   :text "Each other player draws a card."
+   :starting-amount 10},
   "Smithy"
   {:alt "Smithy.jpg",
    :src
@@ -266,7 +286,8 @@
    :kingdom true
    :set "Base"
    :cards 3
-   :text ""},
+   :text ""
+   :starting-amount 10},
   "Library"
   {:alt "Library.jpg",
    :src
@@ -278,7 +299,8 @@
    :types #{:action}
    :kingdom true
    :set "Base"
-   :text "Draw until you have 7 cards in hand, skipping any Action cards you choose to; set those aside, discarding them afterwards."},
+   :text "Draw until you have 7 cards in hand, skipping any Action cards you choose to; set those aside, discarding them afterwards."
+   :starting-amount 10},
   "Sentry"
   {:alt "Sentry.jpg",
    :src
@@ -292,7 +314,8 @@
    :set "Base"
    :cards 1
    :actions 1
-   :text "Look at the top 2 cards of your deck. Trash and/or discard any number of them. Put the rest back on top in any order."},
+   :text "Look at the top 2 cards of your deck. Trash and/or discard any number of them. Put the rest back on top in any order."
+   :starting-amount 10},
   "Vassal"
   {:alt "Vassal.jpg",
    :src
@@ -305,7 +328,8 @@
    :kingdom true
    :set "Base"
    :value 2
-   :text "Discard the top card of your deck. If it is an Action card, you may play it."},
+   :text "Discard the top card of your deck. If it is an Action card, you may play it."
+   :starting-amount 10},
   "Laboratory"
   {:alt "Laboratory.jpg",
    :src
@@ -319,7 +343,8 @@
    :set "Base"
    :cards 2
    :actions 1
-   :text ""},
+   :text ""
+   :starting-amount 10},
   "Village"
   {:alt "Village.jpg",
    :src
@@ -333,7 +358,8 @@
    :set "Base"
    :cards 1
    :actions 2
-   :text ""},
+   :text ""
+   :starting-amount 10},
   "Festival"
   {:alt "Festival.jpg",
    :src
@@ -348,7 +374,8 @@
    :actions 2
    :buys 1
    :value 2
-   :text ""},
+   :text ""
+   :starting-amount 10},
   "Curse"
   {:alt "Curse.jpg",
    :src
@@ -360,7 +387,8 @@
    :types #{:curse}
    :kingdom false
    :set "Base"
-   :vp -1},
+   :vp -1
+   :starting-amount 10},
   "Bandit"
   {:alt "Bandit.jpg",
    :src
@@ -372,7 +400,8 @@
    :types #{:action :attack}
    :kingdom true
    :set "Base"
-   :text "Gain a Gold. Each other player reveals the top 2 cards of their deck, trashes a revealed Treasure other than Copper, and discards the rest."},
+   :text "Gain a Gold. Each other player reveals the top 2 cards of their deck, trashes a revealed Treasure other than Copper, and discards the rest."
+   :starting-amount 10},
   "Cellar"
   {:alt "Cellar.jpg",
    :src
@@ -385,7 +414,8 @@
    :kingdom true
    :set "Base"
    :actions 1
-   :text "Discard any number of cards, then draw that many."},
+   :text "Discard any number of cards, then draw that many."
+   :starting-amount 10},
   "Market"
   {:alt "Market.jpg",
    :src
@@ -400,7 +430,9 @@
    :cards 1
    :actions 1
    :buys 1
-   :value 1},
+   :value 1
+   :text ""
+   :starting-amount 10},
   "Duchy"
   {:alt "Duchy.jpg",
    :src
@@ -412,7 +444,8 @@
    :types #{:victory}
    :kingdom false
    :set "Base"
-   :vp 3},
+   :vp 3
+   :starting-amount 8},
   "Estate"
   {:alt "Estate.jpg",
    :src
@@ -424,4 +457,5 @@
    :types #{:victory}
    :kingdom false
    :set "Base"
-   :vp 1}}}
+   :vp 1
+   :starting-amount 8}}}
