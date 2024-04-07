@@ -145,9 +145,10 @@
   (let [img-div (dom/mk-element "div")]
     (when card
       (let [img (dom/mk-img (card-img card) (:title card))]
-        (dom/add-event-listeners! img
-                                  {:click #(log "Card clicked:" (:title card))
-                                   :contextmenu #(log "Help for card:" (:title card))})
+        (when (:face-up card)
+          (dom/add-event-listeners! img
+                                    {:click #(log "Card clicked:" (:title card))
+                                     :contextmenu #(log "Help for card:" (:title card))}))
         (dom/append-children! img-div [img])))
     (dom/append-children! id [img-div]))
   card)
@@ -386,6 +387,7 @@
           (swap! game-state merge))))
 
 (defn load-ui! []
+  (js/document.addEventListener "contextmenu" #(.preventDefault %))
   (register-handler :SETS-LOADED add-sets)
   (register-handler :SET-SELECTED select-set)
   (register-handler :CARDS-LOADED prepare-board)
@@ -398,4 +400,8 @@
                          :event :SETS-LOADED})
         tick!))
 
-#_(load-ui!)
+(comment
+
+  (load-ui!)
+
+  )
