@@ -31,6 +31,12 @@
       (.addEventListener button "click" click-handler))
     button))
 
+(defn mk-img [src alt]
+  (let [img (mk-element "img")]
+    (set! (.-src img) src)
+    (set! (.-alt img) alt)
+    img))
+
 (defn set-styles! [selector styles]
   (let [el (get-el selector)]
     (set! (.-style el)
@@ -39,7 +45,8 @@
     el))
 
 (defn append-children! [id children]
-  (let [el (get-el id)]
+  (let [children (if (sequential? children) children [children])  ; handle single child
+        el (get-el id)]
     (doseq [child children]
       (.appendChild el child))
     el))
@@ -53,3 +60,8 @@
 (defn set-children! [id children]
   (-> (remove-children! id)
       (append-children! children)))
+
+(defn add-event-listeners! [el listeners]
+  (doseq [[event f] listeners]
+    (.addEventListener el (name event) f))
+  el)

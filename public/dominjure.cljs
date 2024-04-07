@@ -137,13 +137,78 @@
     (dom/set-styles! "#load-set" {:display "none"}))
   state)
 
+(defn card-img [card]
+  (let [filename (-> (:src card) (str/split #"/") last)]
+    (str "img/" (:set card) "/" filename)))
+
+(defn place-card! [card id]
+  (let [img-div (dom/mk-element "div")]
+    (when card
+      (let [img (dom/mk-img (card-img card) (:title card))]
+        (dom/add-event-listeners! img
+                                  {:click #(log "Card clicked:" (:title card))
+                                   :contextmenu #(log "Help for card:" (:title card))})
+        (dom/append-children! img-div [img])))
+    (dom/append-children! id [img-div]))
+  card)
+
+(defn place-pile! [[card & _ :as pile] id]
+  (when-not (place-card! card id)
+    (error "Handle empty pile somehow"))
+  pile)
+
+(defn render-victory! [{:keys [victory] :as state}]
+  (dom/remove-children! "#victory")
+  (doseq [pile victory]
+    (place-pile! pile "#victory"))
+  state)
+
+(defn render-treasure! [{:keys [treasure] :as state}]
+  (dom/remove-children! "#treasure")
+  (doseq [pile treasure]
+    (place-pile! pile "#treasure"))
+  state)
+
+(defn render-supply! [{:keys [kingdom] :as state}]
+  (dom/remove-children! "#supply")
+  (doseq [row (partition-all 5 kingdom)]
+    (let [row-div (dom/mk-element "div")]
+      (dom/append-children! "#supply" row-div)
+      (doseq [pile (reverse row)]
+        (place-pile! pile row-div))))
+  state)
+
+(defn render-player! [{:keys [player-name deck discard hand]}]
+  (let [deck-id (str "#" player-name "-deck")
+        discard-id (str "#" player-name "-discard")
+        hand-id (str "#" player-name "-hand")]
+    (doseq [id [deck-id discard-id hand-id]]
+      (dom/remove-children! id))
+    (place-card! (first deck) deck-id)
+    (place-card! (first discard) discard-id)
+    (doseq [card hand]
+      (place-card! card hand-id
+                   {:click #(str "Card clicked: " (:title card))
+                    :contextmenu #(str "Help for card: " (:title card))}))))
+
+(defn render-players! [state]
+  (doseq [player (map state [:p1 :p2])]
+    (render-player! player))
+  state)
+
 (defn render-board! [{:keys [status] :as state}]
   (case status
     :PENDING-START-GAME
-    (dom/set-children! "#p2-turn"
-                       [(dom/mk-element "span" "Ready to go?")
-                        (dom/mk-button "Start game"
-                                       #(fire-event! :START-GAME []))])
+    (do
+      (-> state
+          render-victory!
+          render-treasure!
+          render-supply!
+          render-players!)
+      (dom/set-children! "#p2-turn"
+                         [(dom/mk-element "span" "Ready to go?")
+                          (dom/mk-button "Start game"
+                                         #(fire-event! :START-GAME []))]))
 
     :default)
   state)
@@ -158,33 +223,6 @@
   (p/-> (js/fetch (js/Request. path))
         (.text)
         read-string))
-
-(defn card-img [card]
-  (let [filename (-> (:src card) (str/split #"/") last)]
-    (str "img/" (:set card) "/" filename)))
-
-(defn place-card!
-  ([card div-or-id]
-   (place-card! card div-or-id nil))
-  ([card div-or-id click-handler]
-   (let [div (if (string? div-or-id) (dom/get-el div-or-id) div-or-id)
-         img-div (js/document.createElement "div")
-         img (js/document.createElement "img")]
-     (.appendChild div img-div)
-     (when card
-       (set! (.-src img) (card-img card))
-       (set! (.-alt img) (:title card))
-       (.appendChild img-div img)
-       (when click-handler
-         (.addEventListener img-div "click" click-handler))))))
-
-(defn populate-supply! [cards]
-  (let [parent-div (dom/get-el "#supply")]
-    (doseq [row (partition-all 5 cards)]
-      (let [div (js/document.createElement "div")]
-        (.appendChild parent-div div)
-        (doseq [card (reverse row)]
-          (place-card! card div))))))
 
 (defn select-cards
   ([pred cards]
@@ -219,20 +257,7 @@
       (merge card {:src card-front
                    :face-up true}))))
 
-(defn place-player-cards! [{:keys [player-name deck discard hand]}]
-  (let [deck-id (str "#" player-name "-deck")
-        discard-id (str "#" player-name "-discard")
-        hand-id (str "#" player-name "-hand")]
-    (doseq [id [deck-id discard-id hand-id]]
-      (dom/remove-children! id))
-    (place-card! (-> deck first flip) deck-id)
-    (place-card! (-> discard first flip) discard-id)
-    (doseq [card hand]
-      (place-card! (flip card) hand-id
-                   {:click #(str "Card clicked: " (:title card))
-                    :contextmenu #(str "Help for card: " (:title card))}))))
-
-(defn start-turn! [player-id]
+#_(defn start-turn! [player-id]
   (let [player (@game-state player-id)]
     (->> (update player :hand #(map flip %))
          place-player-cards!)))
@@ -258,45 +283,11 @@
       (log "No set selected")
       state)))
 
-(defn start-game! [{:keys [card-back cards]}]
-  (let [cards (->> cards
-                   (map (fn [[k v]] [k (assoc v :card-back card-back)]))
-                   (into {}))]
-    (let [victory (select-cards (fn [{:keys [kingdom types]}]
-                                  (and (or (:victory types) (:curse types))
-                                       (not kingdom)))
-                                cards)
-          treasure (select-cards (fn [{:keys [kingdom types]}]
-                                   (and (:treasure types)
-                                        (not kingdom)))
-                                 cards)
-          kingdom (->> cards
-                       (select-cards :kingdom 10))
-          p1-cards (shuffle (starting-deck cards))
-          p2-cards (shuffle (starting-deck cards))
-          p1 (merge {:player-name "p1", :cards p1-cards} (draw 5 p1-cards))
-          p2 (merge {:player-name "p2", :cards p2-cards} (draw 5 p2-cards))]
-      (println "Treasure:" (map :title treasure))
-      (println "Victory:" (map :title victory))
-      (println "Kingdom:" (map :title kingdom))
-      (doseq [card victory]
-        (place-card! card "#victory"))
-      (doseq [card treasure]
-        (place-card! card "#treasure"))
-      (populate-supply! kingdom)
-      (place-player-cards! p1)
-      (place-player-cards! p2)
-      (let [state {:cards cards
-                   :victory victory
-                   :treasure treasure
-                   :kingdom kingdom
-                   :p1 p1
-                   :p2 p2}]
-        (reset! game-state state)
-        state))))
-
 (defn glue-card [card-back card]
-  (assoc card :card-back card-back))
+  (assoc card
+         :card-front (:src card)
+         :card-back card-back
+         :face-up true))
 
 (defn assemble-cards [{:keys [card-back cards]}]
   (->> cards
@@ -326,11 +317,40 @@
               make-piles)))
 
 (defn deal-cards [{:keys [cards] :as state}]
-  (let [p1-cards (shuffle (starting-deck cards))
-        p2-cards (shuffle (starting-deck cards))
-        p1 (merge {:player-name "p1", :cards p1-cards} (draw 5 p1-cards))
-        p2 (merge {:player-name "p2", :cards p2-cards} (draw 5 p2-cards))]
-    (merge state {:p1 p1, :p2 p2})))
+  (->> ["p1" "p2"]
+       (reduce (fn [acc player-name]
+                 (let [player-cards (shuffle (starting-deck cards))]
+                   (assoc acc (keyword player-name)
+                          {:player-name player-name
+                           :cards player-cards
+                           :deck (map flip player-cards)})))
+               state)))
+
+(comment
+
+  (load-ui!)
+  ;; => #<Promise[~]>
+
+  (->> @game-state
+       deal-cards
+       render!)
+
+  (-> @game-state
+      (enqueue-effect {:effect :FETCH-CARDS
+                       :f fetch-edn
+                       :args [(str "sets/Base.edn")]
+                       :event :CARDS-LOADED})
+      tick!)
+
+  (dom/set-styles! "#p2-turn" {:justify-content "right", :gap "10px"})
+
+  (->> @game-state
+       :cards
+       vals
+       (take 2))
+  ;; => ({:card-back "Card_back.jpg", :kingdom true, :alt "Bureaucrat.jpg", :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/4/4d/Bureaucrat.jpg/200px-Bureaucrat.jpg", :title "Bureaucrat", :types #{:action :attack}, :starting-amount 10, :card-front "https://wiki.dominionstrategy.com/images/thumb/4/4d/Bureaucrat.jpg/200px-Bureaucrat.jpg", :cost 4, :set "Base", :height "320", :text "Gain a Silver onto your deck. Each other player reveals a Victory card from their hand and puts it onto their deck (or reveals a hand with no Victory cards)."} {:card-back "Card_back.jpg", :kingdom true, :alt "Moneylender.jpg", :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/7/70/Moneylender.jpg/200px-Moneylender.jpg", :title "Moneylender", :types #{:action}, :starting-amount 10, :card-front "https://wiki.dominionstrategy.com/images/thumb/7/70/Moneylender.jpg/200px-Moneylender.jpg", :cost 4, :set "Base", :height "320", :text "You may trash a Copper from your hand for +3"})
+
+  )
 
 (defn prepare-board [{:keys [set-name] :as state} game-set]
   (let [cards (assemble-cards game-set)]
@@ -379,127 +399,3 @@
         tick!))
 
 #_(load-ui!)
-
-(comment
-
-  (load-ui!)
-  ;; => #<Promise[~]>
-
-  (swap! game-state update-status :PENDING-START-GAME)
-
-  (reset! game-state initial-state)
-
-  @game-state
-  ;; => {:status :PENDING-FETCH-SETS, :available-sets {}, :set-name nil, :set-cards [], :pending-effects [], :pending-events []}
-
-  (select-keys @game-state [:status :pending-effects :pending-events])
-  ;; => {:status :PENDING-SET-SELECTION}
-  ;; => {:status :PENDING-FETCH-CARDS}
-  ;; => {:status :PENDING-FETCH-CARDS}
-  ;; => {:status :PENDING-FETCH-CARDS}
-
-  (-> @game-state
-      (enqueue-effect {:effect :FETCH-CARDS
-                       :f fetch-edn
-                       :args [(str "sets/Base.edn")]
-                       :event :CARDS-LOADED})
-      tick!)
-
-  )
-
-#_(load-ui!)
-
-(comment
-
-  (load-ui!)
-
-  @game-state
-  ;; => {:status :PENDING-SET-SELECTION, :available-sets [{:name "Base"}], :set-name nil, :set-cards []}
-
-  (reset! event-handlers {})
-
-  @event-handlers
-  ;; => {:SETS-LOADED #object[Function], :SET-SELECTED #object[Function]}
-
-  (render! @game-state)
-
-  (fire-event! :SETS-LOADED)
-
-  (doseq [card (->> (:cards @game-state)
-                    (select-cards (fn [{:keys [kingdom types]}]
-                                    (and (:victory types)
-                                         (not kingdom)))))]
-    (place-card! card "#victory"))
-
-  (reset-kingdom!)
-
-  (->> (:selected-cards @game-state)
-       :kingdom
-       (partition-all 5)
-       (map #(map (juxt :title :cost) %)))
-  ;; => ((["Council Room" 5] ["Witch" 5] ["Festival" 5] ["Mine" 5] ["Market" 5]) (["Moneylender" 4] ["Remodel" 4] ["Harbinger" 3] ["Vassal" 3] ["Moat" 2]))
-
-  (select-set!)
-
-  (-> @game-state
-      :selected-cards
-      :kingdom
-      populate-supply!)
-
-  (place-card! {:set "Base", :src "Card_back.jpg"} "#p1-deck")
-  (place-card! {:set "Base", :src "Card_back.jpg"} "#p2-deck")
-
-  (dom/remove-children! "#p1-hand")
-
-  (dotimes [_ 5]
-    (place-card! {:set "Base", :src "Card_back.jpg"} "#p1-hand"))
-  (dotimes [_ 5]
-    (place-card! {:set "Base", :src "Card_back.jpg"} "#p2-hand"))
-
-  (-> (get-in @game-state [:cards "Copper"])
-      (place-card! "#p1-discard"))
-  (-> (get-in @game-state [:cards "Copper"])
-      (place-card! "#p2-discard"))
-
-  (dom/set-styles! "#p1" {:gap "5px"})
-  (dom/set-styles! "#p1-deck" {:width "10%"})
-  (dom/set-styles! "#p1-discard" {:width "10%"})
-  (dom/set-styles! "#p1-play-area" {:width "40%"})
-  (dom/set-styles! "#p1-hand" {:width "40%"})
-
-  (dom/set-styles! "#p2" {:display "flex", :justify-content "space-between", :gap "5px"})
-  (dom/set-styles! "#p2-deck" {:width "10%"})
-  (dom/set-styles! "#p2-discard" {:width "10%"})
-  (dom/set-styles! "#p2-play-area" {:width "40%"})
-  (dom/set-styles! "#p2-hand" {:display "flex", :width "40%", :gap "2px"})
-
-  (let [{:keys [cards]} @game-state]
-    (let [deck (shuffle (starting-deck cards))]
-      {:hand (take 5 deck)
-       :deck (drop 5 deck)}
-      (flip (first deck))))
-  ;; => {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "Card_back.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"}
-
-  (:p1 @game-state)
-  ;; => {:player-name "p1", :cards [{:card-back "Card_back.jpg", :kingdom false, :alt "Estate.jpg", :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/9/91/Estate.jpg/200px-Estate.jpg", :title "Estate", :types #{:victory}, :vp 1, :cost 2, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Estate.jpg", :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/9/91/Estate.jpg/200px-Estate.jpg", :title "Estate", :types #{:victory}, :vp 1, :cost 2, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Estate.jpg", :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/9/91/Estate.jpg/200px-Estate.jpg", :title "Estate", :types #{:victory}, :vp 1, :cost 2, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"}], :hand ({:card-back "Card_back.jpg", :kingdom false, :alt "Estate.jpg", :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/9/91/Estate.jpg/200px-Estate.jpg", :title "Estate", :types #{:victory}, :vp 1, :cost 2, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Estate.jpg", :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/9/91/Estate.jpg/200px-Estate.jpg", :title "Estate", :types #{:victory}, :vp 1, :cost 2, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"}), :deck ({:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Estate.jpg", :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/9/91/Estate.jpg/200px-Estate.jpg", :title "Estate", :types #{:victory}, :vp 1, :cost 2, :set "Base", :height "322"} {:card-back "Card_back.jpg", :kingdom false, :alt "Copper.jpg", :value 1, :width "200", :src "https://wiki.dominionstrategy.com/images/thumb/f/fb/Copper.jpg/200px-Copper.jpg", :title "Copper", :types #{:treasure}, :cost 0, :set "Base", :height "322"})}
-
-  (place-player-cards! (:p2 @game-state))
-
-  (->> (update (:p2 @game-state)
-               :hand
-               #(map flip %))
-       place-player-cards!)
-
-  (-> (dom/get-el "#p2-hand > div")
-      (.addEventListener "click" #(log "clicked")))
-
-  (set! (.-innerHTML (dom/get-el "#p2-turn")) "Play actions")
-
-  (dom/set-styles! "#p2-turn" {:display "flex"
-                           :justify-content "end"})
-
-  (let [el (js/document.createElement "button")]
-    (set! (.-innerHTML el) "End actions")
-    (.appendChild (dom/get-el "#p2-turn") el))
-
-  )
